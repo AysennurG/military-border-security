@@ -38,3 +38,32 @@
 ### Karar
 - Bir sonraki adımda Person sınıfına yönelik veri augmentation (Albumentation) ve/veya class weighting uygulanacak
 - Hedef: Person mAP50'yi en az %60+ seviyesine çıkartmak
+
+## 20.08.26 - Augmenration Deneyi(v2)
+
+### Yapılanlar
+- Person sınıfı içeren 147 tarin görüntüsü tespit edildi
+- Albumentations ile her görüntü 5 varyasyonla çoğaltıldı(RandomBrightnessContrast, RandomFog, RandomShadow, HorizontalFlip, Rotate, GaussianBlur, HueSaturationValue)
+- 720 yeni görüntü/label çifti üretildi ve trains setine eklendi
+- Yeni sınıf dağılımı: Drone 5120, Person 2397(408 den ~6 kat artış), Vehicle 3070
+- Aynı model (yolo11n) ve aynı parametrelerle( epoch= 50, imgsz= 640, batch= 16 ) yeniden eğitildi (name= 'augmented_v2')
+
+### Sonuçlar - v1 (Baseline) vs vs (Augmented) Karşılaştırması
+
+| Sınıf | Metrik  |   v1   |   v2   | Değişim |
+|-------|-------- |--------|--------|---------|
+| Person| mAP50   | 0.396  | 0.447  | +%13    |
+| Person| Recall  | 0.333  | 0.422  | +%27    |
+| Person|Precision| 0.496  | 0.567  | +%14    |
+|Vehicle| mAP50   | 0.611  | 0.613  | ~aynı   |
+| Drone | mAP50   | 0.972  | 0.967  | ~aynı   |(hafif düşmüş)
+| Genel | mAP50   | 0.660  | 0.676  | +%2.4   |
+
+### Analiz
+- Augmentation, Person sınıfında tüm metriklerde ölçülebilir iyileşmeler sağladı, hipotez doğrulandı.
+- Person recall hala düşük (%42) - tek başına augmentation yeterli değil, sınır güvenliği uygulaması için daha güçlü bir çözüm gerekiyor
+- Drona'da çok hafif bir gerileme gözlendi (beklenen bir taviz, modelin dengeye kayması kaynaklı)
+
+### Karar
+- Sonraki iterasyonda değerlendirilecek seçenekler: augmentation oranını artırma, class weighting, daha güçlü bir çözüm gerekiyor
+- v1 ve v2 model ağırlıkları (best.pt ) karşılaştırma için saklanacak.
